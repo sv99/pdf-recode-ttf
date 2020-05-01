@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-#line 2 "pdf-recode.pl"
+# line 2 "pdf-recode.pl"
 # Created by Vadim Repin. This is free software, you may use it as you see fit.
 
 use warnings;

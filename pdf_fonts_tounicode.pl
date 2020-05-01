@@ -48,20 +48,24 @@ sub addPage
     my $pagenum = shift;
 
     my $lastpage = $self->getPage($self->numPages());
-    #print Data::Dumper->Dump([$lastpage]);
-    my $page = $self->getPage($pagenum);
+    # print Data::Dumper->Dump([$lastpage]);
     my $objnum = $self->getPageObjnum($pagenum);
     my $newobjnum = $self->appendObject($self, $objnum, 0);
     my $newdict = $self->getObjValue($newobjnum);
-    #$newdict
     delete $newdict->{Contents};
     # set parent from last page
     $newdict->{Parent}->{value} = $lastpage->{Parent}->{value};
     my $parent = $self->getValue($lastpage->{Parent});
     # set fixed page size MediaBox = A4 [0, 0, 595, 842]
-    $newdict->{MediaBox}->{value}[2]->{value} = '595';
+    # 5 colons with data
+    $newdict->{Rotate}->{value} = 0;
+    $newdict->{MediaBox}->{value}[2]->{value} = '650';
     $newdict->{MediaBox}->{value}[3]->{value} = '842';
+    $newdict->{CropBox}->{value}[2]->{value} = '650';
+    $newdict->{CropBox}->{value}[3]->{value} = '842';
     #print Data::Dumper->Dump([$newdict->{MediaBox}->{value}]);
+    # print Data::Dumper->Dump([$newdict]);
+
     push @{$self->getValue($parent->{Kids})}, CAM::PDF::Node->new('reference', $newobjnum);
 
     while ($parent)
@@ -163,8 +167,9 @@ for my $pagenum (1 .. $num_pages)
         # ToUnicode from embedded font
         my $U = $pdf->getValue( $font->{ToUnicode} );
         print "ToUnicode not exists\n" unless $U;
-        my $us = $pdf->decodeOne( CAM::PDF::Node->new( 'dictionary', $U ) );
-        #print $us;
+        my $us = "";
+        $us = $pdf->decodeOne( CAM::PDF::Node->new( 'dictionary', $U )) if $U;
+        # print $us;
         my %uni = ();
         my @L1 = split( "\n", $us );
         for (my $i = 0; $i < @L1; $i++)
@@ -174,9 +179,9 @@ for my $pagenum (1 .. $num_pages)
                 my $n = (split / /, $L1[$i])[0];
                 for (my $j = $i + 1; $j <= $i + $n; $j++)
                 {
-                    #print "$L1[$j]\n";
+                    # print "$L1[$j]\n";
                     (my $a, my $b, my $c) = split / /, join('> <', split('><', $L1[$j]));
-                    #print "$a\n";
+                    # print "$a\n";
                     my $m = 0;
                     for (my $k = hex substr $a, 1, 2; $k <= hex substr $b, 1, 2; $k++)
                     {
@@ -195,7 +200,6 @@ for my $pagenum (1 .. $num_pages)
                 }
             }
         };
-
         my $page_n = $pdf->numPages();
         #print "Page_n: $page_n\n";
         #print Data::Dumper->Dump([$font->{ToUnicode}]);

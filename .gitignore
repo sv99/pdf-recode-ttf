@@ -1,2 +1,6 @@
 .idea
 *.pdf
+*.swp
+
+!PDFReference15_v6.pdf
+lut1.pl
